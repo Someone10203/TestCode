@@ -1,9 +1,15 @@
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import cv2
 import time
 import numpy as np
 
-# Initialize the camera
-camera = cv2.VideoCapture(0)
+# Camera setup for PiCamera
+camera = PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=(640, 480))
+time.sleep(0.1)
 
 # Define the lower and upper bounds of the color to detect in HSV
 lowerColorThreshold = np.array([20, 125, 75])
@@ -11,12 +17,8 @@ upperColorThreshold = np.array([40, 255, 255])
 
 print("Press CTRL+C to end the program.")
 try:
-    while True:
-        # Capture frame-by-frame
-        ret, image = camera.read()
-        if not ret:
-            print("Failed to capture frame.")
-            break
+    for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+        image = frame.array
 
         # Convert the image to HSV color space
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -48,12 +50,12 @@ try:
         cv2.imshow("Mask", mask)
         cv2.imshow("Result", image_masked)
 
+        rawCapture.truncate(0)
+
         # Break the loop on 'q' key press
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 except KeyboardInterrupt:
     pass
 finally:
-    # Release the camera and destroy all OpenCV windows
-    camera.release()
     cv2.destroyAllWindows()
