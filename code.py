@@ -150,14 +150,7 @@ print("Press CTRL+C to end the program.")
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     image = frame.array
     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    # Detect finish post-it
-    finish_mask = cv2.inRange(image_hsv, FINISH_HSV_LOWER, FINISH_HSV_UPPER)
-    finish_contour = find_largest_postit(finish_mask)
-    if finish_contour is not None:
-        print("Finish post-it detected! Stopping robot.")
-        robot_kinematics(0, 0)
-        break
-    # Detect colored post-it
+    # Removed finish post-it detection
     lh = cv2.getTrackbarPos('LH', 'Trackbars')
     ls = cv2.getTrackbarPos('LS', 'Trackbars')
     lv = cv2.getTrackbarPos('LV', 'Trackbars')
