@@ -20,6 +20,10 @@ try:
     for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
         image = frame.array
 
+        # Flip and invert the image from the camera
+        image = cv2.flip(image, -1)  # Flip both vertically and horizontally
+        image = cv2.bitwise_not(image)  # Invert colors
+
         # Convert the image to HSV color space
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
