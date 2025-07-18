@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import RPi.GPIO as GPIO
-from RPi import PWM
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import time
@@ -32,11 +31,11 @@ GPIO.setup(LEFT_MOTOR_BACKWARD, GPIO.OUT)
 GPIO.setup(RIGHT_MOTOR_FORWARD, GPIO.OUT)
 GPIO.setup(RIGHT_MOTOR_BACKWARD, GPIO.OUT)
 
-# Set up PWM for each motor pin using RPi PWM library
-left_motor_forward_pwm = PWM.PWM(LEFT_MOTOR_FORWARD, 100)
-left_motor_backward_pwm = PWM.PWM(LEFT_MOTOR_BACKWARD, 100)
-right_motor_forward_pwm = PWM.PWM(RIGHT_MOTOR_FORWARD, 100)
-right_motor_backward_pwm = PWM.PWM(RIGHT_MOTOR_BACKWARD, 100)
+# Set up PWM for each motor pin using RPi GPIO library
+left_motor_forward_pwm = GPIO.PWM(LEFT_MOTOR_FORWARD, 100)
+left_motor_backward_pwm = GPIO.PWM(LEFT_MOTOR_BACKWARD, 100)
+right_motor_forward_pwm = GPIO.PWM(RIGHT_MOTOR_FORWARD, 100)
+right_motor_backward_pwm = GPIO.PWM(RIGHT_MOTOR_BACKWARD, 100)
 
 left_motor_forward_pwm.start(0)
 left_motor_backward_pwm.start(0)
