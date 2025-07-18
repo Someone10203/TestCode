@@ -1,0 +1,59 @@
+import cv2
+import time
+import numpy as np
+
+# Initialize the camera
+camera = cv2.VideoCapture(0)
+
+# Define the lower and upper bounds of the color to detect in HSV
+lowerColorThreshold = np.array([20, 125, 75])
+upperColorThreshold = np.array([40, 255, 255])
+
+print("Press CTRL+C to end the program.")
+try:
+    while True:
+        # Capture frame-by-frame
+        ret, image = camera.read()
+        if not ret:
+            print("Failed to capture frame.")
+            break
+
+        # Convert the image to HSV color space
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # Create a mask based on the color thresholds
+        mask = cv2.inRange(image_hsv, lowerColorThreshold, upperColorThreshold)
+
+        # Bitwise-AND mask and original image
+        image_masked = cv2.bitwise_and(image, image, mask=mask)
+
+        # Calculate the pixel counts in different regions
+        pixelleft = cv2.countNonZero(mask[:, :300])
+        pixelright = cv2.countNonZero(mask[:, 340:])
+        pixelmiddle = cv2.countNonZero(mask[:, 300:340])
+        totalpixel = cv2.countNonZero(mask)
+
+        # Implement the behavior logic
+        if totalpixel < 50:
+            print("PANICCC, prob do a slow 360")
+        elif pixelmiddle > pixelleft + pixelright:
+            print("Straight Forward")
+        elif pixelleft > pixelright:
+            print("75,50 motor to left")
+        elif pixelright > pixelleft:
+            print("50,75 motor to right")
+
+        # Display the resulting frames
+        cv2.imshow("Frame", image)
+        cv2.imshow("Mask", mask)
+        cv2.imshow("Result", image_masked)
+
+        # Break the loop on 'q' key press
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+except KeyboardInterrupt:
+    pass
+finally:
+    # Release the camera and destroy all OpenCV windows
+    camera.release()
+    cv2.destroyAllWindows()
