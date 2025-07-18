@@ -90,6 +90,12 @@ def panic():
         right_motor_backward_pwm.ChangeDutyCycle(0)
     # Optionally, add a slow 360 turn logic here
 
+def robot_kinematics(left_duty, right_duty):
+    left_motor_forward_pwm.ChangeDutyCycle(left_duty)
+    left_motor_backward_pwm.ChangeDutyCycle(0)
+    right_motor_forward_pwm.ChangeDutyCycle(right_duty)
+    right_motor_backward_pwm.ChangeDutyCycle(0)
+
 # Camera setup
 camera = PiCamera()
 camera.resolution = (640, 480)
@@ -111,12 +117,28 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     totalpixel = cv2.countNonZero(mask)
     if totalpixel < 50:
         panic()
-    elif pixelmiddle > pixelleft + pixelright:
-        move_forward()
-    elif pixelleft > pixelright:
-        turn_left()
-    elif pixelright > pixelleft:
-        turn_right()
+    else:
+        # Find the weighted average x position of detected color
+        indices = np.where(mask > 0)
+        if len(indices[1]) > 0:
+            avg_x = np.mean(indices[1])
+            center_x = mask.shape[1] // 2
+            offset = avg_x - center_x
+            max_offset = center_x
+            # Calculate turn speed: slower when closer to horizontal center
+            turn_speed = int(75 * min(abs(offset) / max_offset, 1))
+            forward_speed = 75
+            if abs(offset) < 20:
+                robot_kinematics(forward_speed, forward_speed)
+                print('Moving Forward (centered horizontally)')
+            elif offset < 0:
+                robot_kinematics(forward_speed - turn_speed, forward_speed)
+                print(f'Turning Left (speed {forward_speed - turn_speed})')
+            else:
+                robot_kinematics(forward_speed, forward_speed - turn_speed)
+                print(f'Turning Right (speed {forward_speed - turn_speed})')
+        else:
+            panic()
     cv2.imshow("Frame", image)
     cv2.imshow("Mask", mask)
     cv2.imshow("Result", image_masked)
